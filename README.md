@@ -3,7 +3,7 @@ Classification analysis for the BCIAUT clinical trial - a P300-based Brain-Compu
 
 ## Libs
 Classification is performed with toolbox PRTools (version 5.3.3) (copy in lib folder).
-WiSARD implementation from [https://github.com/disbeat/WiSARD_matlab](WiSARD_matlab) is used (copy in lib folder).
+WiSARD implementation from [WiSARD_matlab](https://github.com/disbeat/WiSARD_matlab) is used (copy in lib folder).
 
 
 ## Usage

@@ -2,7 +2,7 @@ function [ classifiers ] = testClassifiers( EEGtest, classifiers )
 %CLASSIFY Summary of this function goes here
 %   Detailed explanation goes here
     
-    Test = dataset(EEGtest.features, EEGtest.isTarget);
+    Test = prdataset(EEGtest.features, EEGtest.isTarget);
     Test.prior = [(EEGtest.nElements - 1)/EEGtest.nElements  1 / EEGtest.nElements];
     EEGtest.isTarget = double(EEGtest.isTarget);
     
@@ -20,7 +20,7 @@ function [ classifiers ] = testClassifiers( EEGtest, classifiers )
     end
     
     for nlevels = [5 10 15 30 50 100]
-       featTest = binarizeFeatures(Test.data, 'thermometer', nlevels);
+       featTest = WiSARD.binarizeData(Test.data, 'thermometer', nlevels);
 
        for nbits = [2 4 8 16 32]
            model_name = sprintf('wisard_nb%d_nl%d', nbits, nlevels);

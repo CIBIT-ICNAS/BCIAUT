@@ -2,8 +2,8 @@ function [ r ] = trainClassifiers( EEGtrain, EEGvalidation, classifiers )
 %CLASSIFY Summary of this function goes here
 %   Detailed explanation goes here
     
-    Train = dataset(EEGtrain.features, EEGtrain.isTarget);
-    Test = dataset(EEGvalidation.features, EEGvalidation.isTarget);
+    Train = prdataset(EEGtrain.features, EEGtrain.isTarget);
+    Test = prdataset(EEGvalidation.features, EEGvalidation.isTarget);
     Train.prior = [(EEGtrain.nElements - 1)/EEGtrain.nElements  1 / EEGtrain.nElements];
     Test.prior = [(EEGvalidation.nElements - 1)/EEGvalidation.nElements  1 / EEGvalidation.nElements];
     
@@ -232,12 +232,12 @@ function [ r ] = trainClassifiers( EEGtrain, EEGvalidation, classifiers )
 
     if cell2mat(intersect([{'wisard'} {'all'}], classifiers)) > 0
        for nlevels = [5 10 15 30 50 100]
-           featTrain = binarizeFeatures(Train.data, 'thermometer', nlevels);
-           featTest = binarizeFeatures(Test.data, 'thermometer', nlevels);
+           featTrain = WiSARD.binarizeData(Train.data, 'thermometer', nlevels);
+           featTest = WiSARD.binarizeData(Test.data, 'thermometer', nlevels);
            
            for nbits = [2 4 8 16 32]
                 
-                W = WiSARD(num2cell([0 1]), size(featTrain, 2), nbits);
+                W = WiSARD(num2cell([0 1]), size(featTrain, 2), nbits, [], [], Train.prior);
                 W.fit(featTrain, num2cell(Train.labels));
                 [labels, scores] = W.predict(featTest);
                 scores = scores(:, 2) - scores(:, 1);

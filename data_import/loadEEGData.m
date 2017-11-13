@@ -11,6 +11,9 @@ function [ EEG ] = loadEEGData( configs, runType, trialStart, trialEnd )
         trialStart = 0;
     end
     epochSize = fix((trialEnd - trialStart) * configs.srate);
+    
+    % specify subjectPath based on subject and session
+    configs.subjectPath = sprintf('%s/Nauti_BCI%02d/Session%d/', configs.DATAPATH, configs.subject, configs.session);
 
     % load raw data
     if strcmp(runType, 'Train1') || strcmp(runType, 'Train2')

@@ -1,6 +1,6 @@
 function [configs] = getConfigs()
 
-DATAPATH = 'D:/DADOS/BCIAUT_Data/';
+DATAPATH = 'D:/Dados/BCIAUT_Data/';
 RESULTSPATH = 'results/';
 
 % use configs structure to store configurations needed in the analysis

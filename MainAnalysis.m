@@ -7,8 +7,8 @@
 % All rights reverved
 
 % setup path
-addpath('analysis', 'classification', 'configs', 'core', 'data_import', 'metrics', 'utils', 'classification/wisard', 'reporting');
-
+addpath(genpath('.'));
+rmpath(genpath('.git'));
 
 %% load configs
 configs = getConfigs();
@@ -26,7 +26,6 @@ for SUBJECT = configs.subject_list
         % define subject configs
         configs.subject = SUBJECT;
         configs.session = SESSION;
-        configs.subjectPath = sprintf('%s/Nauti_BCI%02d/Session%d/', configs.DATAPATH, SUBJECT, SESSION);
 
         % compute model for this session        
         models.(sprintf('s%02d',SUBJECT)){SESSION} = computeBaseModels(configs);
@@ -35,16 +34,17 @@ for SUBJECT = configs.subject_list
         save(sprintf('%s/base_models.mat', configs.RESULTSPATH), 'models');
     end
 end
-base_models = models;
 
 %% compute new models
+load(sprintf('%s/base_models.mat', configs.RESULTSPATH));
+base_models = models;
+
 for SUBJECT = configs.subject_list
     for SESSION = 1:configs.NSESSIONS
         
         % define subject configs
         configs.subject = SUBJECT;
         configs.session = SESSION;
-        configs.subjectPath = sprintf('%s/Nauti_BCI%02d/Session%d/', configs.DATAPATH, SUBJECT, SESSION);
         
         % compute new models for this session
         models = computeNewModels(configs, base_models.(sprintf('s%02d',SUBJECT)){SESSION}, {'all'}, 1);

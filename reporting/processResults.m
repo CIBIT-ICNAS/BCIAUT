@@ -1,15 +1,7 @@
 % use configs structure to store configurations needed in the analysis
-configs = struct();
+configs = getConfigs();
 
-% define aquisition configs
-configs.nChannels = 8;
-configs.nElements = 8;
-configs.nTrials = 10;
-configs.srate = 250;
-configs.NSESSIONS = 7;
-configs.NAVGS = 10;
-
-subjects_list = [1 3:8 10:17];
+subjects_list = configs.subjects_list;
 load( 'results/subject01_session1_avg1.mat' );
 classifiers_list = fieldnames(models)';
 

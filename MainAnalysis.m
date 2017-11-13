@@ -7,7 +7,7 @@
 % All rights reverved
 
 % setup path
-addpath('analysis', 'classification', 'core', 'imports', 'metrics', 'utils', 'classification/wisard', 'reporting');
+addpath('analysis', 'classification', 'configs', 'core', 'data_import', 'metrics', 'utils', 'classification/wisard', 'reporting');
 
 
 %% load configs

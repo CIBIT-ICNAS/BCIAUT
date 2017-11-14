@@ -45,6 +45,24 @@ function [ classifiers ] = testClassifiers( EEGtest, classifiers, configs )
                 
                 
            end
+           
+           % no zeros
+           model_name = sprintf('wisard_nb_%d_nl_%d_th_0_nozeros', nbits, nlevels);
+           if isfield(classifiers, model_name)
+    
+                W = classifiers.(model_name).model;
+                [~, ~, counts] = W.predict(featTest);
+               
+               for threshold = configs.WISARD.thresholds
+                   model_name = sprintf('wisard_nb_%d_nl_%d_th_%d_nozeros', nbits, nlevels, floor(threshold * 100));
+                   [labels, scores] = W.bleach(counts, threshold);
+                   scores = scores(:, 2) - scores(:, 1);
+                   metrics = assessClassificationPerformance(EEGtest.isTarget, cell2mat(labels), scores, EEGtest.nElements);
+                   classifiers.(model_name).testMetrics = metrics;
+               end
+                
+                
+           end
        end
        
     end

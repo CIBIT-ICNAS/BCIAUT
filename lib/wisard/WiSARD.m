@@ -120,7 +120,7 @@ classdef WiSARD < handle
             % Trains the WiSARD using the map discriminators
             
             nSamples = size(dataAddr, 1);
-            for i = nSamples
+            for i = 1:nSamples
                 for m = 1:obj.nmemories
                     % get memory address
                     addr = dataAddr(i, m);

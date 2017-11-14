@@ -2,19 +2,10 @@
 addpath('analysis', 'classification', 'core', 'imports', 'metrics', 'utils', 'classification/wisard');
 
 % use configs structure to store configurations needed in the analysis
-configs = struct();
-DATAPATH = '../../BCIAUT_Data/';
-
-% define aquisition configs
-configs.nChannels = 8;
-configs.nElements = 8;
-configs.nTrials = 10;
-configs.srate = 250;
-configs.NSESSIONS = 7;
-configs.NAVGS = 10;
+configs = getConfigs();
 
 % load base models
-load('results/base_models.mat');
+load(sprintf('%s/base_models.mat', configs.RESULTSPATH));
 base_models = models;
 
 for SUBJECT = [1 3:8 10:17]
@@ -25,7 +16,6 @@ for SUBJECT = [1 3:8 10:17]
         % define subject configs
         configs.subject = SUBJECT;
         configs.session = SESSION;
-        configs.subjectPath = sprintf('%s/Nauti_BCI%02d/Session%d/', DATAPATH,SUBJECT, SESSION);
         tic
         
         % load data

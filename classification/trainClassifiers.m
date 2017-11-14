@@ -1,6 +1,13 @@
-function [ r ] = trainClassifiers( EEGtrain, EEGvalidation, classifiers )
-%CLASSIFY Summary of this function goes here
-%   Detailed explanation goes here
+function [ r ] = trainClassifiers( EEGtrain, EEGvalidation, classifiers, configs )
+%TRAINCLASSIFIERS Trains classifiers with EEGtrain and EEGvalidation
+%   For each classifier in the classifiers name list, trains the classifier
+%   with the EEGtrain dataset and tests it with the EEGvalidation dataset.
+%
+%   Inputs:
+%   EEGtrain        - EEG structure to train the classifiers
+%   EEGvalidation   - EEG structure to train the classifiers
+%   classifiers     - cell array with classifiers names or 'all'
+%   configs         - Additional configurations for classifiers, if needed
     
     Train = prdataset(EEGtrain.features, EEGtrain.isTarget);
     Test = prdataset(EEGvalidation.features, EEGvalidation.isTarget);
@@ -231,18 +238,21 @@ function [ r ] = trainClassifiers( EEGtrain, EEGvalidation, classifiers )
     
 
     if cell2mat(intersect([{'wisard'} {'all'}], classifiers)) > 0
-       for nlevels = [5 10 15 30 50 100]
+       for nlevels = configs.WISARD.nlevels
            featTrain = WiSARD.binarizeData(Train.data, 'thermometer', nlevels);
            featTest = WiSARD.binarizeData(Test.data, 'thermometer', nlevels);
            
-           for nbits = [2 4 8 16 32]
-                
-                W = WiSARD(num2cell([0 1]), size(featTrain, 2), nbits, [], [], Train.prior);
-                W.fit(featTrain, num2cell(Train.labels));
-                [labels, scores] = W.predict(featTest);
-                scores = scores(:, 2) - scores(:, 1);
-                metrics = assessClassificationPerformance(EEGvalidation.isTarget, cell2mat(labels), scores, EEGvalidation.nElements);
-                r.(sprintf('wisard_nb%d_nl%d', nbits, nlevels)) = struct('model', W, 'metrics', metrics);
+           for nbits = configs.WISARD.nbits
+               W = WiSARD(num2cell([0 1]), size(featTrain, 2), nbits, [], [], Train.prior);
+               W.fit(featTrain, num2cell(Train.labels));
+               [~, ~, counts] = W.predict(featTest);
+               
+               for threshold = configs.WISARD.thresholds 
+                   [labels, scores] = W.bleach(counts, threshold);
+                   scores = scores(:, 2) - scores(:, 1);
+                   metrics = assessClassificationPerformance(EEGvalidation.isTarget, cell2mat(labels), scores, EEGvalidation.nElements);
+                   r.(sprintf('wisard_nb_%d_nl_%d_th_%d', nbits, nlevels, floor(threshold*100))) = struct('model', W, 'metrics', metrics);
+               end
            end
        end
        

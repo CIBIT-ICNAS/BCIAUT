@@ -14,26 +14,26 @@ rmpath(genpath('.git'));
 configs = getConfigs();
 configs.subject_list = [1 3:8 10:17];
 
-%% compute base models
-models = struct();
-
-for SUBJECT = configs.subject_list
-    models.(sprintf('s%02d',SUBJECT)) = cell(1, configs.NSESSIONS);
-    
-    for SESSION = 1:configs.NSESSIONS
-        fprintf('subject: %d | session: %d\n', SUBJECT , SESSION); 
-        
-        % define subject configs
-        configs.subject = SUBJECT;
-        configs.session = SESSION;
-
-        % compute model for this session        
-        models.(sprintf('s%02d',SUBJECT)){SESSION} = computeBaseModels(configs);
-        
-        % save temporary result
-        save(sprintf('%s/base_models.mat', configs.RESULTSPATH), 'models');
-    end
-end
+% %% compute base models
+% models = struct();
+% 
+% for SUBJECT = configs.subject_list
+%     models.(sprintf('s%02d',SUBJECT)) = cell(1, configs.NSESSIONS);
+%     
+%     for SESSION = 1:configs.NSESSIONS
+%         fprintf('subject: %d | session: %d\n', SUBJECT , SESSION); 
+%         
+%         % define subject configs
+%         configs.subject = SUBJECT;
+%         configs.session = SESSION;
+% 
+%         % compute model for this session        
+%         models.(sprintf('s%02d',SUBJECT)){SESSION} = computeBaseModels(configs);
+%         
+%         % save temporary result
+%         save(sprintf('%s/base_models.mat', configs.RESULTSPATH), 'models');
+%     end
+% end
 
 %% compute new models
 load(sprintf('%s/base_models.mat', configs.RESULTSPATH));
@@ -47,9 +47,12 @@ for SUBJECT = configs.subject_list
         configs.session = SESSION;
         
         % compute new models for this session
-        models = computeNewModels(configs, base_models.(sprintf('s%02d',SUBJECT)){SESSION}, {'all'}, 1);
+        new_models = computeNewModels(configs, base_models.(sprintf('s%02d',SUBJECT)){SESSION}, {'all'}, 1);
 
-        save(sprintf('%s/subject%02d_session%d_avg%d.mat', configs.RESULTSPATH, SUBJECT, SESSION, avg), 'models');
+        for avg=1:configs.NAVGS
+            models = new_models{avg};
+            save(sprintf('%s/subject%02d_session%d_avg%d.mat', configs.RESULTSPATH, SUBJECT, SESSION, avg), 'models');
+        end
     end
 end
 

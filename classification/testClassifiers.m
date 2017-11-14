@@ -1,6 +1,12 @@
-function [ classifiers ] = testClassifiers( EEGtest, classifiers )
-%CLASSIFY Summary of this function goes here
-%   Detailed explanation goes here
+function [ classifiers ] = testClassifiers( EEGtest, classifiers, configs )
+%TESTCLASSIFIERS Runs the EEG test through the classifiers
+%   For each classifier provided, computes the accuracy metrics for the
+%   EEGtest dataset
+%
+%   Inputs:
+%   EEGtest     - EEG structure to classify
+%   classifiers - Structure with classifier models computed with trainClassifiers
+%   configs     - Additional configurations for classifiers, if needed
     
     Test = prdataset(EEGtest.features, EEGtest.isTarget);
     Test.prior = [(EEGtest.nElements - 1)/EEGtest.nElements  1 / EEGtest.nElements];
@@ -19,18 +25,25 @@ function [ classifiers ] = testClassifiers( EEGtest, classifiers )
         classifiers.svm.testMetrics = assessClassificationPerformance(EEGtest.isTarget, double(labels), scores(:,2), EEGtest.nElements);
     end
     
-    for nlevels = [5 10 15 30 50 100]
+    for nlevels = configs.WISARD.nlevels
        featTest = WiSARD.binarizeData(Test.data, 'thermometer', nlevels);
 
-       for nbits = [2 4 8 16 32]
-           model_name = sprintf('wisard_nb%d_nl%d', nbits, nlevels);
+       for nbits = configs.WISARD.nbits
+           model_name = sprintf('wisard_nb_%d_nl_%d_th_0', nbits, nlevels);
            if isfield(classifiers, model_name)
     
                 W = classifiers.(model_name).model;
-                [labels, scores] = W.predict(featTest);
-                scores = scores(:, 2) - scores(:, 1);
-                metrics = assessClassificationPerformance(EEGtest.isTarget, cell2mat(labels), scores, EEGtest.nElements);
-                classifiers.(model_name).testMetrics = metrics;
+                [~, ~, counts] = W.predict(featTest);
+               
+               for threshold = configs.WISARD.thresholds
+                   model_name = sprintf('wisard_nb_%d_nl_%d_th_%d', nbits, nlevels, floor(threshold * 100));
+                   [labels, scores] = W.bleach(counts, threshold);
+                   scores = scores(:, 2) - scores(:, 1);
+                   metrics = assessClassificationPerformance(EEGtest.isTarget, cell2mat(labels), scores, EEGtest.nElements);
+                   classifiers.(model_name).testMetrics = metrics;
+               end
+                
+                
            end
        end
        

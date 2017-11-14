@@ -46,7 +46,7 @@ for avg = 1:configs.NAVGS
     [EEG_T2_zscored.features, ~] = extractFeatures(EEG_T2_zscored, model.W1, model.W2, struct('featureIdxs', model.featureIdxs));
     
     % train classifiers
-    classifiers = trainClassifiers(EEG_T1_zscored, EEG_T2_zscored, classifiers_list);
+    classifiers = trainClassifiers(EEG_T1_zscored, EEG_T2_zscored, classifiers_list, configs);
     
     % test classifier in avg trials available
     if avg <= EEG_BCI.nTrials
@@ -54,7 +54,7 @@ for avg = 1:configs.NAVGS
         EEG_BCI_zscored = normalizeTrials(EEG_BCI_avg, 'zscore');
         [EEG_BCI_zscored.features, ~] = extractFeatures(EEG_BCI_zscored, model.W1, model.W2, struct('featureIdxs', model.featureIdxs));
         
-        classifiers = testClassifiers(EEG_BCI_zscored, classifiers);
+        classifiers = testClassifiers(EEG_BCI_zscored, classifiers, configs);
     end
     
     if verbose

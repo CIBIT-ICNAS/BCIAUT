@@ -245,13 +245,33 @@ function [ r ] = trainClassifiers( EEGtrain, EEGvalidation, classifiers, configs
            for nbits = configs.WISARD.nbits
                W = WiSARD(num2cell([0 1]), size(featTrain, 2), nbits, [], [], Train.prior);
                W.fit(featTrain, num2cell(Train.labels));
-               [~, ~, counts] = W.predict(featTest);
                
+               model_to_save = W;
+               
+               % with zeros
+               [~, ~, counts] = W.predict(featTest);
                for threshold = configs.WISARD.thresholds 
+                   if threshold > 0.001
+                       model_to_save = [];
+                   end
                    [labels, scores] = W.bleach(counts, threshold);
                    scores = scores(:, 2) - scores(:, 1);
                    metrics = assessClassificationPerformance(EEGvalidation.isTarget, cell2mat(labels), scores, EEGvalidation.nElements);
-                   r.(sprintf('wisard_nb_%d_nl_%d_th_%d', nbits, nlevels, floor(threshold*100))) = struct('model', W, 'metrics', metrics);
+                   r.(sprintf('wisard_nb_%d_nl_%d_th_%d', nbits, nlevels, floor(threshold*100))) = struct('model', model_to_save, 'metrics', metrics);
+               end
+               
+               % without zeros
+               W.cleanZeros();
+               model_to_save = W;
+               [~, ~, counts] = W.predict(featTest);
+               for threshold = configs.WISARD.thresholds 
+                   if threshold > 0.001
+                       model_to_save = [];
+                   end
+                   [labels, scores] = W.bleach(counts, threshold);
+                   scores = scores(:, 2) - scores(:, 1);
+                   metrics = assessClassificationPerformance(EEGvalidation.isTarget, cell2mat(labels), scores, EEGvalidation.nElements);
+                   r.(sprintf('wisard_nb_%d_nl_%d_th_%d_nozeros', nbits, nlevels, floor(threshold*100))) = struct('model', model_to_save, 'metrics', metrics);
                end
            end
        end

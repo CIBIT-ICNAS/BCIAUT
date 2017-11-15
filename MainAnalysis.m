@@ -39,8 +39,15 @@ configs.subject_list = [1 3:8 10:17];
 load(sprintf('%s/base_models.mat', configs.RESULTSPATH));
 base_models = models;
 
-for SUBJECT = configs.subject_list
+for SUBJECT = shuffle(configs.subject_list)
     for SESSION = 1:configs.NSESSIONS
+        fprintf('subject: %d | session: %d\n', SUBJECT, SESSION);
+        if exist(sprintf('%s/subject%02d_session%d_avg%d.mat', configs.RESULTSPATH, SUBJECT, SESSION, 1))
+            continue
+        end
+        
+        models = [];
+        save(sprintf('%s/subject%02d_session%d_avg%d.mat', configs.RESULTSPATH, SUBJECT, SESSION, 1), 'models');
         
         % define subject configs
         configs.subject = SUBJECT;

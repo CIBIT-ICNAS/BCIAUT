@@ -261,14 +261,15 @@ function [ r ] = trainClassifiers( EEGtrain, EEGvalidation, classifiers, configs
                end
                
                % without zeros
-               W.cleanZeros();
-               model_to_save = W;
-               [~, ~, counts] = W.predict(featTest);
+               W_nozeros = W.clone();
+               W_nozeros.cleanZeros();
+               model_to_save = W_nozeros;
+               [~, ~, counts] = W_nozeros.predict(featTest);
                for threshold = configs.WISARD.thresholds 
                    if threshold > 0.001
                        model_to_save = [];
                    end
-                   [labels, scores] = W.bleach(counts, threshold);
+                   [labels, scores] = W_nozeros.bleach(counts, threshold);
                    scores = scores(:, 2) - scores(:, 1);
                    metrics = assessClassificationPerformance(EEGvalidation.isTarget, cell2mat(labels), scores, EEGvalidation.nElements);
                    r.(sprintf('wisard_nb_%d_nl_%d_th_%d_nozeros', nbits, nlevels, floor(threshold*100))) = struct('model', model_to_save, 'metrics', metrics);

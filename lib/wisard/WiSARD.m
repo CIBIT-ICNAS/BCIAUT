@@ -1,5 +1,5 @@
 classdef WiSARD < handle
-%WISARD Wilkie,Stonham & Aleksander’s Recognition Device matlab implementation
+%WISARD Wilkie,Stonham & Aleksanderï¿½s Recognition Device matlab implementation
 %   WiSARD algorithm matlab implementation. It comprises both matrix
 %   (direct access - fast but requires huge ammount of memory) and map
 %   (hashmap access - slower but requires small amount of memory)
@@ -25,7 +25,7 @@ classdef WiSARD < handle
             %
             % Input:
             % classes       -  class identifiers in a cell array, ex. {0 1}
-            % input_size    -  length of each sample (feature vecto)
+            % input_size    -  length of each sample (feature vector)
             % nbits         -  number of bits to use on each memory
             % bits_order    -  random mapping of bits to memories
             % use_map       -  boolean for using map or matrix in discriminators
@@ -77,7 +77,15 @@ classdef WiSARD < handle
             end
             
         end
+
         
+        function [w] = clone(obj)
+            w = WiSARD(obj.classes, length(obj.bits_order), obj.nbits, obj.bits_order, obj.use_map, obj.priors, obj.max_threshold);
+            for d = 1:length(w.classes)
+                w.discriminators{d} = obj.discriminators{d};
+            end
+
+        end
         
         
         function fit(obj, data, labels)
@@ -156,7 +164,7 @@ classdef WiSARD < handle
                     obj.discriminators{c}(:, 1) = 0;
                 else
                     for m = 1:obj.nmemories
-                        obj.discriminators{c}{m}(1) = 0;
+                        obj.discriminators{c}{m}(0) = 0;
                     end
                 end
             end

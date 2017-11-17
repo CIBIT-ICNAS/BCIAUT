@@ -239,12 +239,13 @@ function [ r ] = trainClassifiers( EEGtrain, EEGvalidation, classifiers, configs
 
     if cell2mat(intersect([{'wisard'} {'all'}], classifiers)) > 0
        for nlevels = configs.WISARD.nlevels
-           featTrain = WiSARD.binarizeData(Train.data, 'thermometer', nlevels);
-           featTest = WiSARD.binarizeData(Test.data, 'thermometer', nlevels);
+           [featTrain, levels] = WiSARD.binarizeData(Train.data, 'thermometer', nlevels);
+           featTest = WiSARD.binarizeData(Test.data, 'thermometer', nlevels, levels);
            
            for nbits = configs.WISARD.nbits
                W = WiSARD(num2cell([0 1]), size(featTrain, 2), nbits, [], [], Train.prior);
                W.fit(featTrain, num2cell(Train.labels));
+               W.misc.levels = levels;
                
                model_to_save = W;
                

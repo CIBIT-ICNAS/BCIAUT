@@ -17,6 +17,7 @@ classdef WiSARD < handle
         use_map         % boolean for using map (1) or matrix (0)
         priors          % array of prior class probability
         max_threshold   % higher threshold value for predictive bleaching
+        misc            % help structure for additional model variables
     end
     
     methods      
@@ -60,6 +61,8 @@ classdef WiSARD < handle
             obj.bits_order = bits_order;            
             obj.priors = priors;
             obj.max_threshold = max_threshold;
+            obj.misc = struct();
+            
             
             % create discriminators
             for c = 1:length(classes)
@@ -81,6 +84,8 @@ classdef WiSARD < handle
         
         function [w] = clone(obj)
             w = WiSARD(obj.classes, length(obj.bits_order), obj.nbits, obj.bits_order, obj.use_map, obj.priors, obj.max_threshold);
+            w.misc = obj.misc;
+            
             for d = 1:length(w.classes)
                 w.discriminators{d} = obj.discriminators{d};
             end
@@ -312,15 +317,19 @@ classdef WiSARD < handle
             end
         end
         
-        function [tValues] = thermometerize(values, nLevels)
+        function [tValues, limits] = thermometerize(values, nLevels, limits)
             % Descretizes values using the thermometer method. Receives 
             % the values to descretize and the number of levels to use
             
             if nargin < 2
                 nLevels = 5;
             end
-
-            dValues = discretize(values, nLevels+1);
+            if nargin < 3 || sum(~isnan(limits)) == 0
+                [dValues, limits] = discretize(values, nLevels+1);
+                limits(1) = -Inf; limits(end) = Inf;
+            else
+                [dValues, limits] = discretize(values, limits);
+            end
             dValues(isnan(dValues)) = 0;
 
             tValues = zeros(length(values), nLevels);
@@ -330,7 +339,7 @@ classdef WiSARD < handle
 
         end
         
-        function [bData] = binarizeData(data, method, varargin)
+        function [bData, limits] = binarizeData(data, method, varargin)
             % Transform data into binary representation using the specified method
             % Suported methods: 'thermometer'
             
@@ -341,21 +350,25 @@ classdef WiSARD < handle
             % get data size
             [nsamples, nfeats] = size(data);
             
-            
-
             if strcmpi(method, 'thermometer')
                 if nargin < 3
                     nLevels = 5;
                 else
                     nLevels = varargin{1};
+                    if nargin >= 4
+                       limits = varargin{2};
+                    else
+                       limits = nan(nLevels + 2, nfeats);
+                    end
                 end
                 
                 % initialize result variable
                 bData = zeros(nsamples, nfeats * nLevels);
                 
+                
                 % transform each column
                 for f = 1:nfeats
-                    featData = WiSARD.thermometerize(squeeze(data(:, f)), nLevels);
+                    [featData, limits(:, f)] = WiSARD.thermometerize(squeeze(data(:, f)), nLevels, limits(:, f));
                     bData(:, (f-1)*nLevels+1: f*nLevels) = featData;
                 end
             else

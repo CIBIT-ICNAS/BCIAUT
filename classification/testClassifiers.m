@@ -26,13 +26,12 @@ function [ classifiers ] = testClassifiers( EEGtest, classifiers, configs )
     end
     
     for nlevels = configs.WISARD.nlevels
-       featTest = WiSARD.binarizeData(Test.data, 'thermometer', nlevels);
-
        for nbits = configs.WISARD.nbits
            model_name = sprintf('wisard_nb_%d_nl_%d_th_0', nbits, nlevels);
            if isfield(classifiers, model_name)
     
                 W = classifiers.(model_name).model;
+                featTest = WiSARD.binarizeData(Test.data, 'thermometer', nlevels, W.misc.levels);
                 [~, ~, counts] = W.predict(featTest);
                
                for threshold = configs.WISARD.thresholds
@@ -51,6 +50,7 @@ function [ classifiers ] = testClassifiers( EEGtest, classifiers, configs )
            if isfield(classifiers, model_name)
     
                 W = classifiers.(model_name).model;
+                featTest = WiSARD.binarizeData(Test.data, 'thermometer', nlevels, W.misc.levels);
                 [~, ~, counts] = W.predict(featTest);
                
                for threshold = configs.WISARD.thresholds

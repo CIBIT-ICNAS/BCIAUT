@@ -326,4 +326,51 @@ end
 
 %% averages used test set
 
+load(sprintf('%s/all_accuracies.mat', configs.RESULTSPATH))
 
+bci_avgs = nan(configs.NSUBJECTS * configs.NSESSIONS, 1);
+
+sess2idx = @(sub,sess)(sub-1)*configs.NSESSIONS+sess;
+
+for avg = 2:configs.NAVGS
+    for subject = 1:configs.NSUBJECTS
+        for session = 1:configs.NSESSIONS
+            
+            if isnan(accuracies{avg}.test(sess2idx(subject, session), 1)) && isnan(bci_avgs(sess2idx(subject, session)))
+                bci_avgs(sess2idx(subject, session)) = avg-1;
+            end
+        end
+    end
+end
+   
+bci_avgs(isnan(bci_avgs)) = 10;
+
+
+test_accuracy = nan(size(accuracies{1}.test));
+
+for sess = 1:size(test_accuracy, 1)
+    test_accuracy(sess, :) = accuracies{bci_avgs(sess)}.test(sess, :);
+end
+
+
+wisard_classifier = 'wisard_nb_8_nl_100_th_30';
+classifiers_idxs = [ find(~contains(header, 'wisard'))' find(endsWith(header, wisard_classifier)) ];
+
+classifiers_header = header(classifiers_idxs);
+classifiers_header{contains(classifiers_header, 'wisard')} = 'wisard';
+
+test_accuracy = test_accuracy(:, classifiers_idxs);
+
+figure; hold on;
+boxplot(test_accuracy, classifiers_header)
+[p, tbl, stats] = kruskalwallis(test_accuracy, [], 'off');
+
+stats_text = strjoin( arrayfun(@(name, rank) cellstr(sprintf('%s: %.2f |', name{1}, rank)), classifiers_header', stats.meanranks));
+
+
+text(0.5, -.1, stats_text, 'Units','normalized', 'HorizontalAlignment', 'center');
+title(sprintf('Classifier Comparison: BCI'));
+set(gcf, 'Position', [2000, 50, 1800, 900])
+saveas(gcf, sprintf('%s/figures/classifiers_comparison/BCI.fig', configs.RESULTSPATH));
+saveas(gcf, sprintf('%s/figures/classifiers_comparison/BCI.png', configs.RESULTSPATH));
+close(gcf);

@@ -20,11 +20,21 @@ function [ r ] = trainClassifiers( EEGtrain, EEGvalidation, classifiers, configs
     
     r = struct();
     if cell2mat(intersect([{'svmp'} {'all'}], classifiers)) > 0
-       W =  svc(Train);
-       V = Test * W;
+        best_metric = struct('accuracy', 0);
+        best_model = [];
+        for k = -2:0.5:2
+            c = 2^k;
+            W =  svc(Train, proxm('p', 1), c);
+            V = Test * W;
        
-       metrics = assessClassificationPerformance(EEGvalidation.isTarget, labeld(V), V.data(:,2), EEGvalidation.nElements);
-       r.svmp = struct('model', W, 'metrics', metrics);
+            metrics = assessClassificationPerformance(EEGvalidation.isTarget, labeld(V), V.data(:,2), EEGvalidation.nElements);
+            metrics.C = c;
+            if metrics.accuracy > best_metric.accuracy
+                best_metric = metrics;
+                best_model = W;
+            end
+        end
+        r.svmp = struct('model', best_model, 'metrics', best_metric);
     end
     
     
@@ -144,6 +154,15 @@ function [ r ] = trainClassifiers( EEGtrain, EEGvalidation, classifiers, configs
        
     end
     
+    if cell2mat(intersect([{'nbc'} {'all'}], classifiers)) > 0
+       nbc = fitcnb(EEGtrain.features, EEGtrain.isTarget);
+       [labels, predictionProbabilities, ~] = nbc.predict(EEGvalidation.features);
+       
+       metrics = assessClassificationPerformance(EEGvalidation.isTarget, labels, predictionProbabilities(:, 2), EEGvalidation.nElements);
+       r.nbc = struct('model', nbc, 'metrics', metrics);
+       
+    end
+    
     
     if cell2mat(intersect([{'naiveb'} {'all'}], classifiers)) > 0
        W = naivebc(Train);
@@ -238,6 +257,9 @@ function [ r ] = trainClassifiers( EEGtrain, EEGvalidation, classifiers, configs
     
 
     if cell2mat(intersect([{'wisard'} {'all'}], classifiers)) > 0
+        best_metric = struct('accuracy', 0);
+        best_model = [];
+        
        for nlevels = configs.WISARD.nlevels
            [featTrain, levels] = WiSARD.binarizeData(Train.data, 'thermometer', nlevels);
            featTest = WiSARD.binarizeData(Test.data, 'thermometer', nlevels, levels);
@@ -258,9 +280,16 @@ function [ r ] = trainClassifiers( EEGtrain, EEGvalidation, classifiers, configs
                    [labels, scores] = W.bleach(counts, threshold);
                    scores = scores(:, 2) - scores(:, 1);
                    metrics = assessClassificationPerformance(EEGvalidation.isTarget, cell2mat(labels), scores, EEGvalidation.nElements);
-                   r.(sprintf('wisard_nb_%d_nl_%d_th_%d', nbits, nlevels, floor(threshold*100))) = struct('model', model_to_save, 'metrics', metrics);
+                   metrics.nbits = nbits; metrics.nlevels = nlevels; metrics.threshold = threshold;
+                   if metrics.accuracy > best_metric.accuracy
+                       best_metric = metrics;
+                       best_model = W;
+                   end
+                   
+                   %r.(sprintf('wisard_nb_%d_nl_%d_th_%d', nbits, nlevels, floor(threshold*100))) = struct('model', model_to_save, 'metrics', metrics);
                end
                
+               continue;
                % without zeros
                W_nozeros = W.clone();
                W_nozeros.cleanZeros();
@@ -278,7 +307,7 @@ function [ r ] = trainClassifiers( EEGtrain, EEGvalidation, classifiers, configs
            end
        end
        
-       
+       r.best_wisard = struct('model', best_model, 'metrics', best_metric);
        
     end
 

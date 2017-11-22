@@ -42,7 +42,7 @@ classdef WiSARD < handle
             if nargin < 5 || isempty(use_map)
                 % automatically choose between map or matrix based on
                 % input_size and nbits
-                use_map = (2^nbits * (input_size / nbits) * length(classes)) > 1E8;
+                use_map = (2^nbits * (input_size / nbits) * length(classes)) > 1E7;
             end
             if nargin < 6
                 % if no priors provided, leave empty and will compute from

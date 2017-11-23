@@ -13,7 +13,7 @@ end
 
 %% get accuracies of all models
 % 
-% configs.RESULTSPATH = 'C:\Users\Admin\Dropbox\BCIAUT\results_ok';
+% configs.RESULTSPATH = 'd:\Dropbox\BCIAUT\';
 % 
 % % load a sample model
 % load(sprintf('%s/subject17_session1_avg1.mat', configs.RESULTSPATH))
@@ -56,6 +56,7 @@ end
 %                 end
 %             end
 % 
+%             continue
 %             % wisard data
 %             for nb = nbits
 %                 for nl = nlevels
@@ -90,9 +91,9 @@ end
 % 
 % % save accuracies
 % header = classifiers;
-% save(sprintf('%s/all_accuracies.mat', configs.RESULTSPATH), 'accuracies', 'header', 'wisard_stat_data');
-% 
-% 
+% save(sprintf('%s/all_accuracies_best_models.mat', configs.RESULTSPATH), 'accuracies', 'header', 'wisard_stat_data');
+
+
 % %% compare zero vs non-zero (one-sample ttest)
 % load(sprintf('%s/all_accuracies.mat', configs.RESULTSPATH));
 % 
@@ -137,9 +138,13 @@ end
 % end
 % 
 
-% %% rank classifiers
-% ranks = struct();
-% 
+%% rank classifiers
+
+load(sprintf('%s/all_accuracies_best_models.mat', configs.RESULTSPATH));
+
+
+ranks = struct();
+
 % zero_indexes = [];
 % nozero_indexes = [];
 % for nb = nbits
@@ -150,14 +155,14 @@ end
 %         end
 %     end
 % end
-% 
-% classifiers_to_use = zero_indexes;
+
+% classifiers_to_use = 1:length(header);
 % for dataset_type = {'validation' 'test'}
 % 
 %     dataset_ranks = nan(configs.NAVGS, length(classifiers_to_use));
 %     for avg=1:configs.NAVGS
 % 
-%         % get data
+%         get data
 %         all_data = accuracies{avg}.(dataset_type{1})(:,classifiers_to_use);
 %         
 %         if sum(~isnan(all_data(:))) == 0
@@ -295,16 +300,30 @@ end
 
 
 %% compare classifiers
+load('results/all_accuracies_best_models.mat');
+tmp_accuracies = accuracies;
+tmp_header = header;
 
-wisard_classifier = 'wisard_nb_8_nl_100_th_30';
-classifiers_idxs = [ find(~contains(header, 'wisard'))' find(endsWith(header, wisard_classifier)) ];
+tmp_idxs = [1:2 4];
+
+load('results/all_accuracies.mat');
+
+%wisard_classifier = 'wisard_nb_8_nl_100_th_30';
+%classifiers_idxs = [ find(~contains(header, 'wisard'))' find(endsWith(header, wisard_classifier)) ];
+classifiers_idxs = [ find(endsWith(header, 'naiveb')) ]; %' find(endsWith(header, wisard_classifier)) ];
+
+
+%classifiers_idxs = 1:length(header);
+
 
 classifiers_header = header(classifiers_idxs);
+classifiers_header = cat(1, classifiers_header, tmp_header(tmp_idxs));
 classifiers_header{contains(classifiers_header, 'wisard')} = 'wisard';
+
 
 for dataset_type = {'validation' 'test'}
     for avg=1:configs.NAVGS
-        classifiers_accuracies = accuracies{avg}.(dataset_type{1})(:, classifiers_idxs);
+        classifiers_accuracies = cat(2, accuracies{avg}.(dataset_type{1})(:, classifiers_idxs), tmp_accuracies{avg}.(dataset_type{1})(:, tmp_idxs));
         
         figure; hold on;
         boxplot(classifiers_accuracies, classifiers_header)
@@ -315,7 +334,7 @@ for dataset_type = {'validation' 'test'}
         
         text(0.5, -.1, stats_text, 'Units','normalized', 'HorizontalAlignment', 'center');
         title(sprintf('Classifier Comparison: %s set, avg = %d', dataset_type{1}, avg));
-        set(gcf, 'Position', [2000, 50, 1800, 900])
+        set(gcf, 'Position', [2000, 150, 1000, 700])
         saveas(gcf, sprintf('%s/figures/classifiers_comparison/%s_avg_%d.fig', configs.RESULTSPATH, dataset_type{1}, avg));
         saveas(gcf, sprintf('%s/figures/classifiers_comparison/%s_avg_%d.png', configs.RESULTSPATH, dataset_type{1}, avg));
         close(gcf);
@@ -346,20 +365,44 @@ end
 bci_avgs(isnan(bci_avgs)) = 10;
 
 
-test_accuracy = nan(size(accuracies{1}.test));
+load('results/all_accuracies_best_models.mat');
+tmp_accuracies = accuracies;
+tmp_header = header;
 
-for sess = 1:size(test_accuracy, 1)
-    test_accuracy(sess, :) = accuracies{bci_avgs(sess)}.test(sess, :);
-end
+tmp_idxs = [1:2 4];
+
+load('results/all_accuracies.mat');
+
+%wisard_classifier = 'wisard_nb_8_nl_100_th_30';
+%classifiers_idxs = [ find(~contains(header, 'wisard'))' find(endsWith(header, wisard_classifier)) ];
+classifiers_idxs = [ find(endsWith(header, 'naiveb')) ]; %' find(endsWith(header, wisard_classifier)) ];
 
 
-wisard_classifier = 'wisard_nb_8_nl_100_th_30';
-classifiers_idxs = [ find(~contains(header, 'wisard'))' find(endsWith(header, wisard_classifier)) ];
+%classifiers_idxs = 1:length(header);
+
 
 classifiers_header = header(classifiers_idxs);
+classifiers_header = cat(1, classifiers_header, tmp_header(tmp_idxs));
 classifiers_header{contains(classifiers_header, 'wisard')} = 'wisard';
 
-test_accuracy = test_accuracy(:, classifiers_idxs);
+
+
+
+test_accuracy = nan(size(accuracies{1}.test, 1), 4);
+
+for sess = 1:size(test_accuracy, 1)
+    test_accuracy(sess, :) = cat(2, accuracies{bci_avgs(sess)}.test(sess, classifiers_idxs), tmp_accuracies{bci_avgs(sess)}.test(sess, tmp_idxs)); 
+    %accuracies{bci_avgs(sess)}.test(sess, :);
+end
+
+% 
+% wisard_classifier = 'wisard_nb_8_nl_100_th_30';
+% classifiers_idxs = [ find(~contains(header, 'wisard'))' find(endsWith(header, wisard_classifier)) ];
+% 
+% classifiers_header = header(classifiers_idxs);
+% classifiers_header{contains(classifiers_header, 'wisard')} = 'wisard';
+% 
+% test_accuracy = test_accuracy(:, classifiers_idxs);
 
 figure; hold on;
 boxplot(test_accuracy, classifiers_header)
@@ -370,7 +413,7 @@ stats_text = strjoin( arrayfun(@(name, rank) cellstr(sprintf('%s: %.2f |', name{
 
 text(0.5, -.1, stats_text, 'Units','normalized', 'HorizontalAlignment', 'center');
 title(sprintf('Classifier Comparison: BCI'));
-set(gcf, 'Position', [2000, 50, 1800, 900])
+set(gcf, 'Position', [2000, 150, 1000, 700])
 saveas(gcf, sprintf('%s/figures/classifiers_comparison/BCI.fig', configs.RESULTSPATH));
 saveas(gcf, sprintf('%s/figures/classifiers_comparison/BCI.png', configs.RESULTSPATH));
 close(gcf);

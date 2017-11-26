@@ -1,8 +1,7 @@
-function [ EEG ] = loadEEGData( configs, systemName, runType, trialStart, trialEnd )
+function [ EEG ] = loadEEGData( configs, runType, trialStart, trialEnd )
 %LOADEEGDATA Load raw data from SystemComparison paper
 %   configs must contain subjectPath and other acquisition configuratios 
 %   runType must be 'Train1' or 'Train2'
-%   systemName mus be 'Nauti', 'Mobi' or 'Xpress'
 %   trialStart and trialEnd are in seconds time from the trigger to chop the epochs (default: -0.1 and 1, respectively)
 
     if nargin < 4
@@ -14,15 +13,15 @@ function [ EEG ] = loadEEGData( configs, systemName, runType, trialStart, trialE
     epochSize = fix((trialEnd - trialStart) * configs.srate);
     
     % specify subjectPath based on subject and session
-    configs.subjectPath = sprintf('%s/%s_%s/Session%d/', configs.DATAPATH, systemName, configs.subject, configs.session);
+    configs.subjectPath = sprintf('%s/%s_%s/Session%d/', configs.DATAPATH, configs.system, configs.subject, configs.session);
 
     % load raw data
     if strcmp(runType, 'Train1') || strcmp(runType, 'Train2')
-        runData = load( sprintf('%s/Training/%s_%d_%s_%s_EEG.mat', configs.subjectPath, systemName, configs.nTrials * configs.nElements, configs.subject, runType) );
+        runData = load( sprintf('%s/Training/%s_%d_%s_%s_EEG.mat', configs.subjectPath, configs.system, configs.nTrials * configs.nElements, configs.subject, runType) );
     elseif strcmp(runType, 'BCI')
-        lastModel = load( sprintf('%s/ClassifierModel/%s_%d_Session%d_classifierLastModel.mat', configs.subjectPath, systemName, configs.subject, configs.session) );
+        lastModel = load( sprintf('%s/ClassifierModel/%s_%d_Session%d_classifierLastModel.mat', configs.subjectPath, configs.system, configs.subject, configs.session) );
         configs.nTrials = lastModel.avgToUse;
-        runData = load( sprintf('%s/BCI/%s_%d_%s_%sEEG.mat', configs.subjectPath, systemName, configs.nTrials * configs.nElements, configs.subject, runType) );
+        runData = load( sprintf('%s/BCI/%s_%d_%s_%sEEG.mat', configs.subjectPath, configs.system, configs.nTrials * configs.nElements, configs.subject, runType) );
     else
         throw(MException('loadEEGData:runType_error',['The runType must be Train1, Train2 or BCI. runType provided: ' runType]));
     end

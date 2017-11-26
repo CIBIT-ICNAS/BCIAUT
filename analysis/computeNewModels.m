@@ -58,7 +58,7 @@ for avg = 1:configs.NAVGS
     end
     
     if verbose
-        fprintf('[%d] subject: %d | session: %d\n', avg, configs.subject , configs.session); 
+        fprintf('[%d] subject: %s | session: %d\n', avg, configs.subject , configs.session); 
         printClassifiersPerformance( classifiers );
     end
     session_models{avg} = classifiers;

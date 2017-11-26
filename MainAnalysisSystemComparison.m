@@ -12,38 +12,53 @@ rmpath(genpath('.git'));
 
 %% load configs
 configs = getConfigs();
-configs.system = 'Nauti';
+configs.NSESSIONS = 1;
 configs.DATAPATH = configs.BCIAUTPATH;
 
 configs.subject_list = shuffle([1 3:8 10:17]);
 
 %% compute base models
-models = struct();
+base_models = struct();
+for systemName = {'Nauti', 'Mobi', 'Xpress'}
+    models = struct();
 
-for SUBJECT = configs.subject_list
-    subject_name = sprintf('s%02d',SUBJECT);
-    models.(subject_name) = cell(1, configs.NSESSIONS);
-    
-    for SESSION = 1:configs.NSESSIONS
-        fprintf('subject: %d | session: %d\n', SUBJECT , SESSION); 
+    configs.system = systemName{1};
+
+    for SUBJECT = configs.subject_list
+        subject_name = SUBJECT{1};
+
+        models.(subject_name) = cell(1, configs.NSESSIONS);
         
-        % define subject configs
-        configs.subject = subject_name;
-        configs.session = SESSION;
-        
-        % compute model for this session        
-        models.(subject_name){SESSION} = computeBaseModels(configs);
-        
-        % save temporary result
-        save(sprintf('%s/base_models.mat', configs.RESULTSPATH), 'models');
+        for SESSION = 1:configs.NSESSIONS
+            fprintf('subject: %d | session: %d\n', SUBJECT , SESSION); 
+            
+            % define subject configs
+            configs.subject = subject_name;
+            configs.session = SESSION;
+            
+            % compute model for this session        
+            models.(subject_name){SESSION} = computeBaseModels(configs);
+            
+            % save temporary result
+            save(sprintf('%s/tmp_models.mat', configs.RESULTSPATH), 'models');
+        end
     end
+    base_models.(configs.system) = models;
+
+    % save temporary result
+    save(sprintf('%s/base_models.mat', configs.RESULTSPATH), 'base_models');
 end
+
+
+%% SHOULD BE OK UP TO HERE!!
 
 %% compute new models
 load(sprintf('%s/base_models.mat', configs.RESULTSPATH));
-base_models = models;
 
-configs.RESULTSPATH = sprintf('%s/BCIAUT/', configs.BASEPATH);
+
+configs.RESULTSPATH = sprintf('%s/BCIAUT/SystemComparison', configs.BASEPATH);
+mkdir(configs.RESULTSPATH);
+
 for SUBJECT = configs.subject_list
     for SESSION = 1:configs.NSESSIONS
         subject_name = sprintf('s%02d',SUBJECT);

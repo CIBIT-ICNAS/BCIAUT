@@ -1,6 +1,6 @@
 function [configs] = getConfigs()
 
-DATAPATH = 'D:/Dados/BCIAUT_Data/';
+BASEPATH = '/Volumes/DADOS/Dropbox/';
 RESULTSPATH = 'results/';
 
 % use configs structure to store configurations needed in the analysis
@@ -13,7 +13,6 @@ configs.nTrials = 10;
 configs.srate = 250;
 configs.NSESSIONS = 7;
 configs.NAVGS = 10;
-configs.DATAPATH = DATAPATH;
 configs.RESULTSPATH = RESULTSPATH;
 
 configs.WISARD = struct( ...
@@ -21,5 +20,12 @@ configs.WISARD = struct( ...
   'nlevels',    [5 10 15 30 50 100], ...
   'thresholds', [1E-7 0.05 0.1 0.3 0.5 0.8 1] ...
 );
+
+configs.BCIAUTPATH = sprintf('%s/BCIAUT_data/',BASEPATH);
+configs.SYSTEMCOMPARISONPATH = sprintf('%s/BCIAUT_SystemComparison/',BASEPATH);
+configs.PILOTSPATH = sprintf('%s/BCIAUT_Pilots/',BASEPATH);
+
+
+configs.DATAPATH = configs.BCIAUTPATH;
 
 end

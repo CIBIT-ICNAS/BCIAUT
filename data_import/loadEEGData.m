@@ -36,6 +36,9 @@ function [ EEG ] = loadEEGData( configs, runType, trialStart, trialEnd )
     labels = labels(:);
 
     % get targets
+    if size(targets, 2) > size(targets, 1)
+        targets = targets';
+    end
     targets = repmat(targets, [1 configs.nElements * configs.nTrials])'; 
     targets = targets(:);
 

@@ -35,6 +35,18 @@ for SUBJECT = [1 3:8 10:17]
         plotP300(EEG_T2);
         plotP300(EEG_BCI);
         
+        filtData = applyFilter(EEG_T1.data, model.W1);
+        y = filtData(1, :, :);
+        z= applyFilter(filtData(2:end,:,:), model.W2(:,1));
+        
+        T = squeeze(mean(y(1, :, EEG_T1.isTarget), 3));
+        NT = squeeze(mean(y(1, :, ~EEG_T1.isTarget), 3));
+        idxY = featIdxs(featIdxs > length(T)) - length(T);
+        figure; hold on
+        plot(T);
+        plot(idxY, T(idxY), 'o');
+        plot(NT);
+        plot(idxY, NT(idxY), 'o');
         % plot subject features
         figure;
         plotP300(EEG_T1, 1);

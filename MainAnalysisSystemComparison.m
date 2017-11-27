@@ -13,13 +13,14 @@ rmpath(genpath('.git'));
 %% load configs
 configs = getConfigs();
 configs.NSESSIONS = 1;
-configs.DATAPATH = configs.BCIAUTPATH;
+configs.DATAPATH = configs.SYSTEMCOMPARISONPATH;
 
-configs.subject_list = shuffle([1 3:8 10:17]);
+configs.subject_list = shuffle({'AnaOliveira' 'CarlosAmaral' 'CarlosDiogo' 'DanielaMarcelino' 'FilipaRodrigues' 'JoaoAndrade' ...
+    'JoaoMarques' 'JoaoPereira' 'LuanaVelho' 'MariaJoao' 'PedroCaetano' 'RicardoBarata' 'XiaoZhu'});
 
 %% compute base models
-base_models = struct();
-for systemName = {'Nauti', 'Mobi', 'Xpress'}
+%base_models = struct();
+for systemName = {'Xpress'} %'Nauti', 'Mobi', 
     models = struct();
 
     configs.system = systemName{1};
@@ -30,7 +31,7 @@ for systemName = {'Nauti', 'Mobi', 'Xpress'}
         models.(subject_name) = cell(1, configs.NSESSIONS);
         
         for SESSION = 1:configs.NSESSIONS
-            fprintf('subject: %d | session: %d\n', SUBJECT , SESSION); 
+            fprintf('subject: %s | session: %d\n', subject_name , SESSION); 
             
             % define subject configs
             configs.subject = subject_name;
@@ -49,7 +50,7 @@ for systemName = {'Nauti', 'Mobi', 'Xpress'}
     save(sprintf('%s/base_models.mat', configs.RESULTSPATH), 'base_models');
 end
 
-
+return
 %% SHOULD BE OK UP TO HERE!!
 
 %% compute new models

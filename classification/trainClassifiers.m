@@ -22,8 +22,7 @@ function [ r ] = trainClassifiers( EEGtrain, EEGvalidation, classifiers, configs
     if cell2mat(intersect([{'svmp'} {'all'}], classifiers)) > 0
         best_metric = struct('accuracy', 0);
         best_model = [];
-        for k = -2:0.5:2
-            c = 2^k;
+        for c = log10(logspace(0.01, 1, 10))
             W =  svc(Train, proxm('p', 1), c);
             V = Test * W;
        
@@ -40,11 +39,21 @@ function [ r ] = trainClassifiers( EEGtrain, EEGvalidation, classifiers, configs
     
     
     if cell2mat(intersect([{'svm'} {'all'}], classifiers)) > 0
-        svm = fitcsvm(Train.data, Train.labels);
-        [labels, scores] = svm.predict(Test.data);
-        
-        metrics = assessClassificationPerformance(EEGvalidation.isTarget, double(labels), scores(:,2), EEGvalidation.nElements);
-        r.svm = struct('model', svm, 'metrics', metrics);
+        best_metric = struct('accuracy', 0);
+        best_model = [];
+        for c = log10(logspace(0.01, 1, 10))
+            svm = fitcsvm(Train.data, Train.labels, 'BoxConstraint', c);
+            [labels, scores] = svm.predict(Test.data);
+       
+            metrics = assessClassificationPerformance(EEGvalidation.isTarget, double(labels), scores(:,2), EEGvalidation.nElements);
+            metrics.C = c;
+            if metrics.accuracy > best_metric.accuracy
+                best_metric = metrics;
+                best_model = W;
+            end
+        end
+        r.svm = struct('model', best_model, 'metrics', best_metric);
+
     end
     
     

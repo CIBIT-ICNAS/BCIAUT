@@ -16,7 +16,7 @@ function results = assessClassificationPerformance(labels, predictedLabels, pred
         end
 
         % gather run results
-        results.accuracy = sum(correctPredictions) / length(correctPredictions);
+        results.accuracy = sum(correctPredictions) / length(correctPredictions) + rand()*1E-6;
         results.error = 1-results.accuracy;
     end
 end

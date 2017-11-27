@@ -1,7 +1,12 @@
 function [configs] = getConfigs()
 
-BASEPATH = 'D:/Dropbox/';
-RESULTSPATH = 'results/';
+[~, hostname] = system('hostname');
+
+if contains(hostname, 'disbeatmac')
+    BASEPATH = '/Volumes/Dropbox';
+else
+    BASEPATH = 'D:/Dropbox/';
+end
 
 % use configs structure to store configurations needed in the analysis
 configs = struct();

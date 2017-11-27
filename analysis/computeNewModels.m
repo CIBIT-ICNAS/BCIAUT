@@ -25,8 +25,11 @@ end
         
 % load data
 EEG_T1 = loadEEGData(configs, 'Train1', 0, 1);
+
 EEG_T2 = loadEEGData(configs, 'Train2', 0, 1);
-EEG_BCI = loadEEGData(configs, 'BCI', 0, 1);
+%EEG_BCI = loadEEGData(configs, 'BCI', 0, 1);
+
+[EEG_T2, EEG_BCI] splotDataset(EEG_T2, 0.3);
 
 session_models = cell(1, configs.NAVGS);
 

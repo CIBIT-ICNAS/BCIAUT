@@ -54,9 +54,12 @@ end
 
 %% compute new models
 load(sprintf('%s/base_models.mat', configs.RESULTSPATH));
+all_models = base_models;
 
 for systemName = {'Xpress', 'Nauti', 'Mobi'} 
     configs.system = systemName{1};
+
+    base_models = all_models.(configs.system);
     for SUBJECT = configs.subject_list
         subject_name = SUBJECT{1};
         for SESSION = 1:configs.NSESSIONS

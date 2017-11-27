@@ -26,14 +26,14 @@ end
 % load data
 EEG_T1 = loadEEGData(configs, 'Train1', 0, 1);
 
-EEG_T2 = loadEEGData(configs, 'Train2', 0, 1);
+EEG_BCI = loadEEGData(configs, 'Train2', 0, 1);
 %EEG_BCI = loadEEGData(configs, 'BCI', 0, 1);
 
-[EEG_T2, EEG_BCI] splotDataset(EEG_T2, 0.3);
-
+%[EEG_T2, EEG_BCI] = splitDataset(EEG_T2, 0.3);
+[EEG_T1, EEG_T2] = splitDataset(EEG_T1, 0.7);
 session_models = cell(1, configs.NAVGS);
 
-for avg = 1:configs.NAVGS
+parfor avg = 1:configs.NAVGS
     
     model = base_models{avg};
 

@@ -49,7 +49,7 @@ function [ r ] = trainClassifiers( EEGtrain, EEGvalidation, classifiers, configs
             metrics.C = c;
             if metrics.accuracy > best_metric.accuracy
                 best_metric = metrics;
-                best_model = W;
+                best_model = svm;
             end
         end
         r.svm = struct('model', best_model, 'metrics', best_metric);

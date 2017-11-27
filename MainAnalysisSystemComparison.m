@@ -20,35 +20,35 @@ configs.subject_list = shuffle({'AnaOliveira' 'CarlosAmaral' 'CarlosDiogo' 'Dani
 
 %% compute base models
 %base_models = struct();
-for systemName = {'Xpress'} %'Nauti', 'Mobi', 
-    models = struct();
-
-    configs.system = systemName{1};
-
-    for SUBJECT = configs.subject_list
-        subject_name = SUBJECT{1};
-
-        models.(subject_name) = cell(1, configs.NSESSIONS);
-        
-        for SESSION = 1:configs.NSESSIONS
-            fprintf('subject: %s | session: %d\n', subject_name , SESSION); 
-            
-            % define subject configs
-            configs.subject = subject_name;
-            configs.session = SESSION;
-            
-            % compute model for this session        
-            models.(subject_name){SESSION} = computeBaseModels(configs);
-            
-            % save temporary result
-            save(sprintf('%s/tmp_models.mat', configs.RESULTSPATH), 'models');
-        end
-    end
-    base_models.(configs.system) = models;
-
-    % save temporary result
-    save(sprintf('%s/base_models.mat', configs.RESULTSPATH), 'base_models');
-end
+% for systemName = {'Xpress'} %'Nauti', 'Mobi', 
+%     models = struct();
+% 
+%     configs.system = systemName{1};
+% 
+%     for SUBJECT = configs.subject_list
+%         subject_name = SUBJECT{1};
+% 
+%         models.(subject_name) = cell(1, configs.NSESSIONS);
+%         
+%         for SESSION = 1:configs.NSESSIONS
+%             fprintf('subject: %s | session: %d\n', subject_name , SESSION); 
+%             
+%             define subject configs
+%             configs.subject = subject_name;
+%             configs.session = SESSION;
+%             
+%             compute model for this session        
+%             models.(subject_name){SESSION} = computeBaseModels(configs);
+%             
+%             save temporary result
+%             save(sprintf('%s/tmp_models.mat', configs.RESULTSPATH), 'models');
+%         end
+%     end
+%     base_models.(configs.system) = models;
+% 
+%     save temporary result
+%     save(sprintf('%s/base_models.mat', configs.RESULTSPATH), 'base_models');
+% end
 
 
 

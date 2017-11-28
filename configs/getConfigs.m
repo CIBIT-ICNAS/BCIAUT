@@ -4,6 +4,8 @@ function [configs] = getConfigs()
 
 if contains(hostname, 'disbeatmac')
     BASEPATH = '/Volumes/Dropbox';
+elseif contains(hostname, 'czc02841b4')
+    BASEPATH = 'C:/Users/Admin/Dropbox/';
 else
     BASEPATH = 'D:/Dropbox/';
 end

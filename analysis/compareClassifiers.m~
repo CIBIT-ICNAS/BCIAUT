@@ -1,4 +1,5 @@
 
+
 %% load configs
 configs = getConfigs();
 configs.subjects = {'AnaOliveira' 'CarlosAmaral' 'CarlosDiogo' 'DanielaMarcelino' 'FilipaRodrigues' 'JoaoAndrade' ...
@@ -6,7 +7,7 @@ configs.subjects = {'AnaOliveira' 'CarlosAmaral' 'CarlosDiogo' 'DanielaMarcelino
 configs.sessions = 1;
 
 configs.DATAPATH = configs.SYSTEMCOMPARISONPATH;
-configs.RESULTSPATH = sprintf('%s/results/T2_split_30/', configs.DATAPATH);
+configs.RESULTSPATH = sprintf('%s/results/T2_split_50/', configs.DATAPATH);
 
 classifiers = {'fisher', 'nbc', 'svm', 'best_wisard'};
 classifiers_legend = classifiers;
@@ -15,7 +16,7 @@ classifiers_legend{length(classifiers)+1} = 'chance rate';
 
 %% object detection accuracy
 
-mkdir('results/figures/syscompare/object_detection/');
+mkdir('results/figures/syscompare/p300/');
 
 for sys = {'Nauti', 'Mobi', 'Xpress'}
     configs.system = sys{1};
@@ -46,9 +47,7 @@ end
 
 
 
-%% P300 balanced accuracy
-
-mkdir('results/figures/syscompare/p300/');
+% P300 balanced accuracy
 
 for sys = {'Nauti', 'Mobi', 'Xpress'}
     configs.system = sys{1};

@@ -19,8 +19,14 @@ models = cell(1, configs.NAVGS);
 
 
 % load data
-EEG_T1 = loadEEGData(configs, 'Train1', 0, 1);
-EEG_T2 = loadEEGData(configs, 'Train2', 0, 1);
+EEG_T1 = loadEEGData(configs, 'Train1', -0.2, 1.2);
+EEG_T2 = loadEEGData(configs, 'Train2', -0.2, 1.2);
+
+
+weights = computeSlowFluctuationsWeights(EEG_T1);
+EEG_T1_c = correctSlowFluctuations(EEG_T1, weights);
+
+
 parfor avg = 1:configs.NAVGS
     % average and normalize
     EEG_T1_avg = averageTrials(EEG_T1, avg);

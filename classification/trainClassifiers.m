@@ -23,17 +23,22 @@ function [ r ] = trainClassifiers( EEGtrain, EEGvalidation, classifiers, configs
         best_metric = struct('accuracy', 0);
         best_model = [];
         for c = log10(logspace(0.01, 1, 10))
+            tic;
             W =  svc(Train, proxm('p', 1), c);
+            traint = toc;
+            tic;
             V = Test * W;
-       
+            testt = toc;
             metrics = assessClassificationPerformance(EEGvalidation.isTarget, labeld(V), V.data(:,2), EEGvalidation.nElements);
             metrics.C = c;
             if metrics.accuracy > best_metric.accuracy
                 best_metric = metrics;
                 best_model = W;
+                best_traint = traint;
+                best_testt = testt;
             end
         end
-        r.svmp = struct('model', best_model, 'metrics', best_metric);
+        r.svmp = struct('model', best_model, 'metrics', best_metric, 'traint', best_traint, 'testt', best_testt);
     end
     
     
@@ -42,17 +47,22 @@ function [ r ] = trainClassifiers( EEGtrain, EEGvalidation, classifiers, configs
         best_metric = struct('accuracy', 0);
         best_model = [];
         for c = log10(logspace(0.01, 1, 10))
+            tic;
             svm = fitcsvm(Train.data, Train.labels, 'BoxConstraint', c);
+            traint = toc;
+            tic;
             [labels, scores] = svm.predict(Test.data);
-       
+            testt = toc;
             metrics = assessClassificationPerformance(EEGvalidation.isTarget, double(labels), scores(:,2), EEGvalidation.nElements);
             metrics.C = c;
             if metrics.accuracy > best_metric.accuracy
                 best_metric = metrics;
                 best_model = svm;
+                best_traint = traint;
+                best_testt = testt;
             end
         end
-        r.svm = struct('model', best_model, 'metrics', best_metric);
+        r.svm = struct('model', best_model, 'metrics', best_metric, 'traint', best_traint, 'testt', best_testt);
 
     end
     
@@ -68,11 +78,15 @@ function [ r ] = trainClassifiers( EEGtrain, EEGvalidation, classifiers, configs
     
     
     if cell2mat(intersect([{'fisher'} {'all'}], classifiers)) > 0
+       tic;
        W =  fisherc(Train);
+       traint = toc;
+       tic;
        V = Test * W;
+       testt = toc;
        
        metrics = assessClassificationPerformance(EEGvalidation.isTarget, labeld(V), V.data(:,2), EEGvalidation.nElements);
-       r.fisher = struct('model', W, 'metrics', metrics);       
+       r.fisher = struct('model', W, 'metrics', metrics, 'traint', traint, 'testt', testt);       
     end
     
     if cell2mat(intersect([{'klld'} {'all'}], classifiers)) > 0
@@ -164,21 +178,29 @@ function [ r ] = trainClassifiers( EEGtrain, EEGvalidation, classifiers, configs
     end
     
     if cell2mat(intersect([{'nbc'} {'all'}], classifiers)) > 0
+       tic;
        nbc = fitcnb(EEGtrain.features, EEGtrain.isTarget);
+       traint = toc;
+       tic;
        [labels, predictionProbabilities, ~] = nbc.predict(EEGvalidation.features);
+       testt = toc;
        
        metrics = assessClassificationPerformance(EEGvalidation.isTarget, labels, predictionProbabilities(:, 2), EEGvalidation.nElements);
-       r.nbc = struct('model', nbc, 'metrics', metrics);
+       r.nbc = struct('model', nbc, 'metrics', metrics, 'traint', traint, 'testt', testt);
        
     end
     
     
     if cell2mat(intersect([{'naiveb'} {'all'}], classifiers)) > 0
+       tic;
        W = naivebc(Train);
+       traint = toc;
+       tic;
        V = Test * W;
+       testt = toc;
        
        metrics = assessClassificationPerformance(EEGvalidation.isTarget, labeld(V), V.data(:,2), EEGvalidation.nElements);
-       r.naiveb = struct('model', W, 'metrics', metrics);
+       r.naiveb = struct('model', W, 'metrics', metrics, 'traint', traint, 'testt', testt);
        
     end
     
@@ -270,12 +292,17 @@ function [ r ] = trainClassifiers( EEGtrain, EEGvalidation, classifiers, configs
         best_model = [];
         
        for nlevels = configs.WISARD.nlevels
+           tic;
            [featTrain, levels] = WiSARD.binarizeData(Train.data, 'thermometer', nlevels);
+           binarizationtraintime = toc;
+           tic;
            featTest = WiSARD.binarizeData(Test.data, 'thermometer', nlevels, levels);
-           
+           binarizationtesttime = toc;
            for nbits = configs.WISARD.nbits
                W = WiSARD(num2cell([0 1]), size(featTrain, 2), nbits, [], [], Train.prior);
+               tic;
                W.fit(featTrain, num2cell(Train.labels));
+               traint = toc;
                W.misc.levels = levels;
                
                model_to_save = W;
@@ -286,16 +313,24 @@ function [ r ] = trainClassifiers( EEGtrain, EEGvalidation, classifiers, configs
                    if threshold > 0.001
                        model_to_save = [];
                    end
+                   tic;
                    [labels, scores] = W.bleach(counts, threshold);
                    scores = scores(:, 2) - scores(:, 1);
+                   testt = toc;
                    metrics = assessClassificationPerformance(EEGvalidation.isTarget, cell2mat(labels), scores, EEGvalidation.nElements);
                    metrics.nbits = nbits; metrics.nlevels = nlevels; metrics.threshold = threshold;
                    if metrics.accuracy > best_metric.accuracy
                        best_metric = metrics;
                        best_model = W;
+                       best_binarizationtraintime = binarizationtraintime;
+                       best_binarizationtesttime = binarizationtesttime;
+                       best_traint = traint;
+                       best_testt = testt;
                    end
                    
-                   %r.(sprintf('wisard_nb_%d_nl_%d_th_%d', nbits, nlevels, floor(threshold*100))) = struct('model', model_to_save, 'metrics', metrics);
+                   r.(sprintf('wisard_nb_%d_nl_%d_th_%d', nbits, nlevels, floor(threshold*100))) = struct('model', model_to_save, 'metrics', metrics,  ...
+                       'binarizationtraintime', binarizationtraintime, 'binarizationtesttime', binarizationtesttime, ...
+                       'traint', traint, 'testt', testt);
                end
                
                continue;
@@ -316,7 +351,10 @@ function [ r ] = trainClassifiers( EEGtrain, EEGvalidation, classifiers, configs
            end
        end
        
-       r.best_wisard = struct('model', best_model, 'metrics', best_metric);
+       r.best_wisard = struct('model', best_model, 'metrics', best_metric, ...
+           'metricsbinarizationtraintime',best_binarizationtraintime, ...
+           'metricsbinarizationtesttime', best_binarizationtesttime, ...
+           'traint', best_traint, 'testt', best_testt);
        
     end
 

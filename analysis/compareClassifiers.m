@@ -6,7 +6,7 @@ configs.subjects = {'AnaOliveira' 'CarlosAmaral' 'CarlosDiogo' 'DanielaMarcelino
 configs.sessions = 1;
 
 configs.DATAPATH = configs.SYSTEMCOMPARISONPATH;
-configs.RESULTSPATH = sprintf('%s/results/T2_split_30/', configs.DATAPATH);
+configs.RESULTSPATH = sprintf('%s/results/T1_split_50_fixo_100nl/', configs.DATAPATH);
 
 classifiers = {'fisher', 'nbc', 'svm', 'best_wisard'};
 classifiers_legend = classifiers;
@@ -142,4 +142,24 @@ for sys = {'Nauti', 'Mobi', 'Xpress'}
     
     saveas(gcf, sprintf('results/figures/syscompare/wisard/%s_threshold', configs.system), 'fig');
     saveas(gcf, sprintf('results/figures/syscompare/wisard/%s_threshold', configs.system), 'png');
+    
+    
+    levelspermemory = nlevels ./ nbits;
+    hist_avgs = nan(configs.NAVGS, length(unique(levelspermemory)));
+    for avg = 1:configs.NAVGS
+        hist_avgs(avg, :) = histc(squeeze(levelspermemory(1,avg, :)), sort(unique(levelspermemory)));
+    end
+    
+    
+    figure;
+    bar(1:configs.NAVGS, hist_avgs, 'stacked');
+    xlabel('Signal-to-Noise Ratio');
+    ylabel('Count');
+    title( sprintf('%s NBits per Feature', configs.system) );
+    legend(arrayfun(@(x) cellstr(num2str(x)), sort(unique(levelspermemory))));
+
+    saveas(gcf, sprintf('results/figures/syscompare/wisard/%s_levelspermemory', configs.system), 'fig');
+    saveas(gcf, sprintf('results/figures/syscompare/wisard/%s_levelspermemory', configs.system), 'png');
+    
+    
 end

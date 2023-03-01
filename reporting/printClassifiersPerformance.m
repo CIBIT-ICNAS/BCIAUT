@@ -6,6 +6,12 @@ function  printClassifiersPerformance( classifiers )
         if isfield(classifiers.(classifier{1}), 'testMetrics')
             fprintf(' %.2f', classifiers.(classifier{1}).testMetrics.accuracy);
         end
+        if isfield(classifiers.(classifier{1}), 'traint')
+            fprintf(' | %.2f', classifiers.(classifier{1}).traint);
+        end
+        if isfield(classifiers.(classifier{1}), 'testt')
+            fprintf(' | %.2f', classifiers.(classifier{1}).testt);
+        end
         fprintf('\n');
     end
 

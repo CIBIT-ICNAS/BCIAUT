@@ -8,7 +8,7 @@ function [ EEG ] = loadEEGData( configs, runType, trialStart, trialEnd )
         trialEnd = 1;
     end
     if nargin < 3
-        trialStart = 0;
+        trialStart = -0.2;
     end
     epochSize = fix((trialEnd - trialStart) * configs.srate);
     
@@ -19,7 +19,7 @@ function [ EEG ] = loadEEGData( configs, runType, trialStart, trialEnd )
     if strcmp(runType, 'Train1') || strcmp(runType, 'Train2')
         runData = load( sprintf('%s/Training/%s_%d_%s_%s_EEG.mat', configs.subjectPath, configs.system, configs.nTrials * configs.nElements, configs.subject, runType) );
     elseif strcmp(runType, 'BCI')
-        lastModel = load( sprintf('%s/ClassifierModel/%s_%d_Session%d_classifierLastModel.mat', configs.subjectPath, configs.system, configs.subject, configs.session) );
+        lastModel = load( sprintf('%s/ClassifierModel/%s_%s_Session%d_classifierLastModel.mat', configs.subjectPath, configs.system, configs.subject, configs.session) );
         configs.nTrials = lastModel.avgToUse;
         runData = load( sprintf('%s/BCI/%s_%d_%s_%sEEG.mat', configs.subjectPath, configs.system, configs.nTrials * configs.nElements, configs.subject, runType) );
     else
@@ -53,6 +53,7 @@ function [ EEG ] = loadEEGData( configs, runType, trialStart, trialEnd )
 
     EEG = struct('data', EEGData, 'xmin', trialStart, 'xmax', trialEnd, 'srate', configs.srate, 'nElements', configs.nElements, ...
         'nTrials', configs.nTrials, 'nRuns', fix(size(EEGData, 3) / (configs.nElements * configs.nTrials)), 'labels', labels, ...
-        'isTarget', isTarget, 'times', trialStart:1/configs.srate:trialEnd-1/configs.srate);
+        'isTarget', isTarget, 'times', trialStart:1/configs.srate:trialEnd-1/configs.srate, 'nbchan', configs.nChannels, ...
+        'trials', length(labels), 'pnts', epochSize );
 end
 

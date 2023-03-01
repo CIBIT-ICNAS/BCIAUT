@@ -19,8 +19,8 @@ configs.subject_list = shuffle({'AnaOliveira' 'CarlosAmaral' 'CarlosDiogo' 'Dani
     'JoaoMarques' 'JoaoPereira' 'LuanaVelho' 'MariaJoao' 'PedroCaetano' 'RicardoBarata' 'XiaoZhu'});
 
 %% compute base models
-%base_models = struct();
-% for systemName = {'Xpress'} %'Nauti', 'Mobi', 
+% base_models = struct();
+% for systemName = {'Nauti'} %'Nauti', 'Mobi', 
 %     models = struct();
 % 
 %     configs.system = systemName{1};
@@ -56,7 +56,9 @@ configs.subject_list = shuffle({'AnaOliveira' 'CarlosAmaral' 'CarlosDiogo' 'Dani
 load(sprintf('%s/base_models.mat', configs.RESULTSPATH));
 all_models = base_models;
 
-for systemName = {'Xpress', 'Nauti', 'Mobi'} 
+configs.RESULTSPATH = sprintf('%s/time_analysis/', configs.RESULTSPATH);
+
+for systemName = { 'Nauti'} 
     configs.system = systemName{1};
 
     base_models = all_models.(configs.system);

@@ -5,7 +5,7 @@ function [configs] = getConfigs()
 if contains(hostname, 'disbeatmac')
     BASEPATH = '/Volumes/DADOS/Dropbox';
 elseif contains(hostname, 'czc02841b4')
-    BASEPATH = 'C:/Users/Admin/Dropbox/';
+    BASEPATH = 'D:/saved_from_dropbox/';
 else
     BASEPATH = 'D:/Dropbox/';
 end
@@ -28,12 +28,12 @@ configs.WISARD = struct( ...
   'thresholds', [1E-7 0.05 0.1 0.3 0.5 0.8 1] ...
 );
 
-configs.BCIAUTPATH = sprintf('%s/BCIAUT_data/',BASEPATH);
+configs.BCIAUTPATH = 'K:/BCI/BCI_Code/Data'%sprintf('%s/BCIAUT_data/',BASEPATH);
 configs.SYSTEMCOMPARISONPATH = sprintf('%s/BCIAUT_SystemComparison/',BASEPATH);
 configs.PILOTSPATH = sprintf('%s/BCIAUT_Pilots/',BASEPATH);
 
 
-configs.DATAPATH = configs.SYSTEMCOMPARISONPATH;
+configs.DATAPATH = configs.BCIAUTPATH;
 configs.RESULTSPATH = sprintf('%s/results/', configs.DATAPATH);
 
 end

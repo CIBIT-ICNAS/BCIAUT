@@ -33,7 +33,7 @@ EEG_BCI = loadEEGData(configs, 'Train2', 0, 1);
 [EEG_T1, EEG_T2] = splitDataset(EEG_T1, 0.7);
 session_models = cell(1, configs.NAVGS);
 
-parfor avg = 1:configs.NAVGS
+for avg = 1:configs.NAVGS
     
     model = base_models{avg};
 

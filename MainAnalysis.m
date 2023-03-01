@@ -15,13 +15,13 @@ configs = getConfigs();
 configs.system = 'Nauti';
 configs.DATAPATH = configs.BCIAUTPATH;
 
-configs.subject_list = shuffle([1 3:8 10:17]);
+configs.subject_list = ([1 3:8 10:17]);
 
 %% compute base models
 models = struct();
 
 for SUBJECT = configs.subject_list
-    subject_name = sprintf('s%02d',SUBJECT);
+    subject_name = sprintf('BCI%02d',SUBJECT);
     models.(subject_name) = cell(1, configs.NSESSIONS);
     
     for SESSION = 1:configs.NSESSIONS
@@ -30,6 +30,9 @@ for SUBJECT = configs.subject_list
         % define subject configs
         configs.subject = subject_name;
         configs.session = SESSION;
+         
+        %medicon_test(configs);
+        %continue
         
         % compute model for this session        
         models.(subject_name){SESSION} = computeBaseModels(configs);
@@ -38,7 +41,7 @@ for SUBJECT = configs.subject_list
         save(sprintf('%s/base_models.mat', configs.RESULTSPATH), 'models');
     end
 end
-
+return
 %% compute new models
 load(sprintf('%s/base_models.mat', configs.RESULTSPATH));
 base_models = models;
